@@ -418,7 +418,7 @@ class Scratch3PongMPConnect {
                     login_data = `connect;${this.nextSessionID};${this.sessionID};${user_name}`;
                 await this.socket.send(login_data);
                 if (connection_type == 2)
-                    if (await this.socket.receiveData() == "nss") this.noSuchSession = true; else this.noSuchSession = fasle;
+                    if (await this.socket.receiveData() == "nss") this.noSuchSession = true; else this.noSuchSession = false;
             }
         } catch (error) {
             console.error('Error during socket initialization:', error);
@@ -439,7 +439,9 @@ class Scratch3PongMPConnect {
         else angle = dir + 90;
         // Convert to radians
         angle = (angle * Math.PI) / 180;
-        let adjacent_side = Math.cos(angle) * steps;
+        let adjacent_side = 0;
+        if (dir < 0) adjacent_side = Math.cos(angle) * -steps;
+        else adjacent_side = Math.cos(angle) * steps;<
         let opposite_side = Math.sin(angle) * steps;
         this.posx = Math.round((posx + adjacent_side) * 100) / 100;
         this.posy = Math.round((posy + opposite_side) * 100) / 100;
@@ -484,14 +486,12 @@ class Scratch3PongMPConnect {
             } else if (message == 2) {
                 await this.socket.send("request: user_names");
                 let response = await this.socket.receiveData();
-                console.log(response);
                 let names = response.split(";");
                 this.player1 = names[0];
                 this.player2 = names[1];
             } else if (message == 3)  {
                 await this.socket.send("request: full_party");
                 let response = await this.socket.receiveData();
-                console.log(response);
                 if (response == 'true') this.full_party = true; else this.full_party = false;
             } else if (message == 4) {
                 await this.socket.send("request: round_end");
