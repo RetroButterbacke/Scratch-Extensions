@@ -3,7 +3,7 @@ import websockets
 import aioconsole
 import os
 import re
-import keyboard
+import math
 
 PORT = 4338
 nextSessionID = 0
@@ -24,12 +24,11 @@ async def handle_connection(websocket, path):
     global session_complete
     global user_names
     global prompt_refreshed
-    game_speed = 0
 
     print(f'Client connected from {websocket.remote_address}')
     prompt_refreshed = True
 
-    if not websocket in client_sockets:
+    if websocket not in client_sockets:
         await websocket.send(str(nextSessionID))
         login_data = await websocket.recv()
         print(login_data)
@@ -39,13 +38,13 @@ async def handle_connection(websocket, path):
                 nextSessionID = int(login_data_list[1])
             client_sockets.append(websocket)
             sessionID = login_data_list[2]
-            if not sessionID in sessionIDs:
+            if sessionID not in sessionIDs:
                 sessionIDs.append(sessionID)
             if login_data_list[0] == 'create':
                 sessions[sessionID] = {'player1': websocket, 'player2': None, 'variables': [], 'varp1': [], 'varp2': [], 'round_end': False}
                 session_complete[sessionID] = False
             else:
-                if sessions.__contains__(sessionID):
+                if sessionID in sessions:
                     sessions[sessionID]['player2'] = websocket
                     session_complete[sessionID] = True
                     await websocket.send("ss")
@@ -56,34 +55,30 @@ async def handle_connection(websocket, path):
 
     try:
         while True:
-            checkSessionData()
+            sessionID = users_session[websocket]
+            if session_complete[sessionID] is True:
+                await checkSessionData(websocket)
             message = await websocket.recv()
-
-            print(message)
 
             if str(message).startswith("request:"):
                 if "full_party" in message:
-                    await websocket.send(str(session_complete[users_session[websocket]]).lower())
-                if session_complete[users_session[websocket]]:
+                    await websocket.send(str(session_complete[sessionID]).lower())
+                if session_complete[sessionID]:
                     if "user_names" in message:
-                        session = sessions[users_session[websocket]]
+                        session = sessions[sessionID]
                         p1_name = user_names[session["player1"]]
                         p2_name = user_names[session["player2"]]
                         send = f"{p1_name};{p2_name}"
-                        print(p1_name)
-                        print(p2_name)
-                        print(send)
-                        print(websocket)
                         await websocket.send(send)
                     if "sessionData" in message:
-                        session = sessions[users_session[websocket]]
+                        session = sessions[sessionID]
                         if session['variables']:
-                            sessionData = re.sub(';', ';', ';'.join(session['variables'])) 
+                            sessionData = re.sub(';', ';', ';'.join(session['variables']))
                             await websocket.send(sessionData)
                         else:
                             await websocket.send("null")
                     if "round_end" in message:
-                        session = sessions[users_session[websocket]]
+                        session = sessions[sessionID]
                         await websocket.send(str(session['round_end']).lower())
 
             elif str(message).startswith("set:"):
@@ -91,21 +86,18 @@ async def handle_connection(websocket, path):
                     match = re.match(r'^set: sessionData:(.*)$', message)
                     if match:
                         sessionData = match.group(1).strip()
-                    session = sessions[users_session[websocket]]
+                    session = sessions[sessionID]
                     if session['variables']:
                         if session['player1'] is websocket:
                             session['varp1'] = sessionData.split(";")
-                            session['varp1'] = [int(x) for x in session['varp1']]
                         else:
                             session['varp2'] = sessionData.split(";")
-                            session['varp2'] = [int(x) for x in session['varp2']]
                     elif session['player1'] is websocket:
                         session['variables'] = sessionData.split(";")
-                        print(session['variables'])
                 if "round_end" in message:
-                    session = sessions[users_session[websocket]]
+                    session = sessions[sessionID]
                     session['round_end'] = True
-                    
+
             if prompt_refreshed:
                 print(">", end='', flush=True)
                 prompt_refreshed = False
@@ -137,8 +129,8 @@ async def handle_connection(websocket, path):
                     del user_names[websocket]
                     del users_session[websocket]
                 client_sockets.remove(websocket)
-        except:
-            pass
+        except Exception as ex:
+            print(f"Error handling disconnection: {ex}")
         print(f"Removed client {websocket.remote_address}. Active clients: {len(client_sockets)}")
         prompt_refreshed = True
 
@@ -148,23 +140,87 @@ async def stop_server():
     await asyncio.gather(*close_tasks)
 
 def calcMove(x, y, dir, steps):
+    x = float(x)
+    y = float(y)
+    dir = float(dir)
+    steps = float(steps)
     angle = 0
     if dir >= 0:
         angle = 90 - dir
-    else: 
+    else:
         angle = dir + 90
-
+    adjacent_side = 0
+    if dir < 0:
+        adjacent_side = math.cos(math.radians(angle)) * -steps
+    else:
+        adjacent_side = math.cos(math.radians(angle)) * steps
+    opposite_side = math.sin(math.radians(angle)) * steps
+    new_x = round((x + adjacent_side), 2)
+    new_y = round((y + opposite_side), 2)
+    return (new_x, new_y)
 
 async def checkSessionData(websocket):
     # Get user data
-    session = sessions[users_session[websocket]]
+    sessionID = users_session[websocket]
+    session = sessions[sessionID]
+    variables = session['variables']
     varp1 = session['varp1']
     varp2 = session['varp2']
+    if not (len(varp1) > 0 and len(varp2) > 0):
+        return
     # Check ball dir first
-    if not varp1[3] is varp2[3]:
+    if varp1[3] != varp2[3]:
         session['variables'] = varp1
-    # Ceck x and y coords
-    
+        return
+    # Check x and y coords
+    x, y = calcMove(variables[0], variables[1], variables[2], 10 * float(variables[7]))
+    xTo0p1 = float(varp1[0]) - float(x)
+    yTo0p1 = float(varp1[1]) - float(y)
+    xTo0p2 = float(varp2[0]) - float(x)
+    yTo0p2 = float(varp2[1]) - float(y)
+    if xTo0p1 < xTo0p2:
+        variables[0] = str(varp1[0])
+    else:
+        variables[0] = str(varp2[0])
+    if yTo0p1 < yTo0p2:
+        variables[1] = str(varp1[1])
+    else:
+        variables[1] = str(varp2[1])
+    # Check player positions // I know its not the best way but it would be a low chance that both are cheating
+    if not float(varp1[3]) > float(variables[3]) + 10 or not float(varp1[3]) < float(variables[3]) - 10:
+        variables[3] = str(varp1[3])
+    else:
+        variables[3] = str(varp2[3])
+    if not float(varp2[4]) > float(variables[4]) + 10 or not float(varp2[4]) < float(variables[4]) - 10:
+        variables[4] = str(varp2[4])
+    else:
+        variables[4] = str(varp1[4])
+    # Check scores
+    if float(varp1[5]) > float(varp2[5]):
+        if not float(varp1[5]) > float(variables[5]) + 1 and not float(varp1[5]) < float(variables[5]):
+            variables[5] = str(varp1[5])
+        else:
+            variables[5] = str(varp2[5])
+    else:
+        if not float(varp2[5]) > float(variables[5]) + 1 and not float(varp2[5]) < float(variables[5]):
+            variables[5] = str(varp2[5])
+        else:
+            variables[5] = str(varp1[5])
+    if float(varp1[6]) > float(varp2[6]):
+        if not float(varp1[6]) > float(variables[6]) + 1 and not float(varp1[6]) < float(variables[6]):
+            variables[6] = str(varp1[6])
+        else:
+            variables[6] = str(varp2[6])
+    else:
+        if not float(varp2[6]) > float(variables[6]) + 1 and not float(varp2[6]) < float(variables[6]):
+            variables[6] = str(varp2[6])
+        else:
+            variables[6] = str(varp1[6])
+    # Check game speed
+    print(varp1[7])
+    variables[7] = str(varp1[7])
+
+    print(sessions[users_session[websocket]]['variables'])
 
 def clear_console():
     os.system('cls' if os.name == 'nt' else 'clear')

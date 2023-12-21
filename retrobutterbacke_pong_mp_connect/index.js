@@ -475,9 +475,6 @@ class Scratch3PongMPConnect {
                 await this.socket.send("request: sessionData");
                 let response = await this.socket.receiveData();
                 let data = response.split(";");
-                data = data.map(function(x) {
-                  return parseInt(x, 10); // 10 is the radix (base) for parsing integers
-                });
                 this.ball_x = data[0];
                 this.ball_y = data[1];
                 this.ball_rotation = data[2];
@@ -535,55 +532,55 @@ class Scratch3PongMPConnect {
     }
 
     getSessionID () {
-        return this.sessionID;
+        return Number(this.sessionID);
     }
 
     ballx () {
-        return this.ball_x;
+        return Number(this.ball_x);
     }
     
     bally () {
-        return this.ball_y;
+        return Number(this.ball_y);
     }
 
     ballrotation () {
-        return this.ball_rotation;
+        return Number(this.ball_rotation);
     }
 
     p1y () {
-        return this.p1_y;       
+        return Number(this.p1_y);       
     }
 
     p2y () {
-        return this.p2_y;
+        return Number(this.p2_y);
     }
 
     p1points () {
-        return this.p1_points;
+        return Number(this.p1_points);
     }
 
     p2points () {
-        return this.p2_points;
+        return Number(this.p2_points);
     }
 
     gamespeed () {
-        return this.game_speed;
+        return Number(this.game_speed);
     }
 
     p1 () {
-        return this.player1;
+        return Number(this.player1);
     }
 
     p2 () {
-        return this.player2;
+        return Number(this.player2);
     }
 
     calc_posx () {
-        return this.posx;
+        return Number(this.posx);
     }
     
     calc_posy () {
-        return this.posy;
+        return Number(this.posy);
     }
 
 }

@@ -25,14 +25,11 @@ build-gui:
 	cd $(GUI_DIR) && npm install && npm ln scratch-vm
 
 run:
-	echo "Copying extension development files..."
-	cp $(BUILD_SCRIPTS) $(SRC_HOME)
-	cp $(RUN_SCRIPTS) $(SRC_HOME)
 	echo "Running Setup"
 	./setup.sh
 	echo "Running build + server"
-	./2-build.sh
-	./3-run-private.sh
+	./build.sh
+	./run-private.sh
 
 # Phony targets
 .PHONY: all build build-vm build-gui copy-scripts
