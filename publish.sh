@@ -19,7 +19,7 @@ git commit -m "Update"
 git push origin main
 
 echo "Building the Scratch fork"
-./2-build.sh
+./build.sh
 
 echo "Preparing a gh-pages branch"
 DEVBRANCH=$(git rev-parse --abbrev-ref HEAD)
