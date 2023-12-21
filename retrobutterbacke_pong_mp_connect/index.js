@@ -418,7 +418,7 @@ class Scratch3PongMPConnect {
                     login_data = `connect;${this.nextSessionID};${this.sessionID};${user_name}`;
                 await this.socket.send(login_data);
                 if (connection_type == 2)
-                    if (await this.socket.receiveData() == "nss") this.noSuchSession = true; else this.noSuchSession = fasle;
+                    if (await this.socket.receiveData() == "nss") this.noSuchSession = true; else this.noSuchSession = false;
             }
         } catch (error) {
             console.error('Error during socket initialization:', error);
@@ -439,7 +439,9 @@ class Scratch3PongMPConnect {
         else angle = dir + 90;
         // Convert to radians
         angle = (angle * Math.PI) / 180;
-        let adjacent_side = Math.cos(angle) * steps;
+        let adjacent_side = 0;
+        if (dir < 0) adjacent_side = Math.cos(angle) * -steps;
+        else adjacent_side = Math.cos(angle) * steps;
         let opposite_side = Math.sin(angle) * steps;
         this.posx = Math.round((posx + adjacent_side) * 100) / 100;
         this.posy = Math.round((posy + opposite_side) * 100) / 100;
@@ -473,6 +475,9 @@ class Scratch3PongMPConnect {
                 await this.socket.send("request: sessionData");
                 let response = await this.socket.receiveData();
                 let data = response.split(";");
+                data = data.map(function(x) {
+                  return parseInt(x, 10); // 10 is the radix (base) for parsing integers
+                });
                 this.ball_x = data[0];
                 this.ball_y = data[1];
                 this.ball_rotation = data[2];
