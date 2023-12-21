@@ -441,7 +441,7 @@ class Scratch3PongMPConnect {
         angle = (angle * Math.PI) / 180;
         let adjacent_side = 0;
         if (dir < 0) adjacent_side = Math.cos(angle) * -steps;
-        else adjacent_side = Math.cos(angle) * steps;<
+        else adjacent_side = Math.cos(angle) * steps;
         let opposite_side = Math.sin(angle) * steps;
         this.posx = Math.round((posx + adjacent_side) * 100) / 100;
         this.posy = Math.round((posy + opposite_side) * 100) / 100;
@@ -475,6 +475,9 @@ class Scratch3PongMPConnect {
                 await this.socket.send("request: sessionData");
                 let response = await this.socket.receiveData();
                 let data = response.split(";");
+                data = data.map(function(x) {
+                  return parseInt(x, 10); // 10 is the radix (base) for parsing integers
+                });
                 this.ball_x = data[0];
                 this.ball_y = data[1];
                 this.ball_rotation = data[2];

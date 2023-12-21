@@ -56,6 +56,7 @@ async def handle_connection(websocket, path):
 
     try:
         while True:
+            checkSessionData()
             message = await websocket.recv()
 
             print(message)
@@ -94,8 +95,10 @@ async def handle_connection(websocket, path):
                     if session['variables']:
                         if session['player1'] is websocket:
                             session['varp1'] = sessionData.split(";")
+                            session['varp1'] = [int(x) for x in session['varp1']]
                         else:
                             session['varp2'] = sessionData.split(";")
+                            session['varp2'] = [int(x) for x in session['varp2']]
                     elif session['player1'] is websocket:
                         session['variables'] = sessionData.split(";")
                         print(session['variables'])
@@ -144,8 +147,24 @@ async def stop_server():
     close_tasks = [websocket.close() for websocket in client_sockets]
     await asyncio.gather(*close_tasks)
 
-async def checkSessionData():
-    return
+def calcMove(x, y, dir, steps):
+    angle = 0
+    if dir >= 0:
+        angle = 90 - dir
+    else: 
+        angle = dir + 90
+
+
+async def checkSessionData(websocket):
+    # Get user data
+    session = sessions[users_session[websocket]]
+    varp1 = session['varp1']
+    varp2 = session['varp2']
+    # Check ball dir first
+    if not varp1[3] is varp2[3]:
+        session['variables'] = varp1
+    # Ceck x and y coords
+    
 
 def clear_console():
     os.system('cls' if os.name == 'nt' else 'clear')
