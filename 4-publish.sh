@@ -7,12 +7,6 @@ if [ -z "$SCRATCH_SRC_HOME" ]; then
     exit 1
 fi
 
-echo "Checking that Scratch has been patched"
-if [ ! -f "$SCRATCH_SRC_HOME/patched" ]; then
-    echo "Scratch has not yet been patched. Run ./0-setup.sh"
-    exit 1
-fi
-
 # allow this script to be run from other locations, despite the
 #  relative file paths used in it
 if [[ $BASH_SOURCE = */* ]]; then
@@ -20,10 +14,15 @@ if [[ $BASH_SOURCE = */* ]]; then
 fi
 
 echo "Commit any changes"
-git add your-scratch-extension
+git add retrobutterbacke_pong_mp_connect
 git add dependencies
+git add Makefile
+git add setup.sh
+git add Pong\ Multiplayer\ \(11\).sb3
+git add pong_mp_connect_server.py
+git add 4-publish.sh
 git commit -m "Update"
-git push origin master
+git push origin main
 
 echo "Building the Scratch fork"
 ./2-build.sh
@@ -36,6 +35,8 @@ then
 else
   git checkout -b gh-pages
 fi
+
+git stash pop
 
 echo "Preparing a publish folder"
 if [ -d "scratch" ]
