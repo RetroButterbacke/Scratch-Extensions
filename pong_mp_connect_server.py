@@ -7,7 +7,6 @@ import math
 
 PORT = 4338
 nextSessionID = 0
-prompt_refreshed = False
 sessionIDs = []
 client_sockets = []
 users_session = {}
@@ -23,15 +22,17 @@ async def handle_connection(websocket, path):
     global sessions
     global session_complete
     global user_names
-    global prompt_refreshed
 
-    print(f'Client connected from {websocket.remote_address}')
-    prompt_refreshed = True
+    print(f'\nClient connected from {websocket.remote_address}')
+    print(">", end='', flush=True)
 
+
+    ###########################################################
+    # Login if not existent. just in case somethin went wrong #
+    ###########################################################
     if websocket not in client_sockets:
         await websocket.send(str(nextSessionID))
         login_data = await websocket.recv()
-        print(login_data)
         if login_data:
             login_data_list = login_data.split(';')
             if login_data_list[0] == 'create':
@@ -98,14 +99,10 @@ async def handle_connection(websocket, path):
                     session = sessions[sessionID]
                     session['round_end'] = True
 
-            if prompt_refreshed:
-                print(">", end='', flush=True)
-                prompt_refreshed = False
-
             await asyncio.sleep(0)
 
     except websockets.exceptions.ConnectionClosed as e:
-        print(f"Client disconnected with code {e.code}, reason: {e.reason}")
+        print(f"\nClient disconnected with code {e.code}, reason: {e.reason}")
         try:
             sessionID = users_session[websocket]
             session = sessions[sessionID]
@@ -132,7 +129,7 @@ async def handle_connection(websocket, path):
         except Exception as ex:
             print(f"Error handling disconnection: {ex}")
         print(f"Removed client {websocket.remote_address}. Active clients: {len(client_sockets)}")
-        prompt_refreshed = True
+        print(">", end='', flush=True)
 
 async def stop_server():
     print("Stopping server...")
@@ -160,67 +157,84 @@ def calcMove(x, y, dir, steps):
     return (new_x, new_y)
 
 async def checkSessionData(websocket):
-    # Get user data
     sessionID = users_session[websocket]
     session = sessions[sessionID]
     variables = session['variables']
     varp1 = session['varp1']
     varp2 = session['varp2']
+
     if not (len(varp1) > 0 and len(varp2) > 0):
         return
-    # Check ball dir first
+
+    ########################
+    # Check ball dir first #
+    ########################
     if varp1[3] != varp2[3]:
-        session['variables'] = varp1
-        return
-    # Check x and y coords
+        variables[3] = str(varp1[3])
+
+    ########################
+    # Check x and y coords #
+    ########################
     x, y = calcMove(variables[0], variables[1], variables[2], 10 * float(variables[7]))
     xTo0p1 = float(varp1[0]) - float(x)
     yTo0p1 = float(varp1[1]) - float(y)
     xTo0p2 = float(varp2[0]) - float(x)
     yTo0p2 = float(varp2[1]) - float(y)
-    if xTo0p1 < xTo0p2:
+
+    if xTo0p1 == xTo0p2:
         variables[0] = str(varp1[0])
     else:
-        variables[0] = str(varp2[0])
-    if yTo0p1 < yTo0p2:
+        variables[0] = str(varp1[0]) if xTo0p1 < xTo0p2 else str(varp2[0])
+
+    if yTo0p1 == yTo0p2:
         variables[1] = str(varp1[1])
     else:
-        variables[1] = str(varp2[1])
-    # Check player positions // I know its not the best way but it would be a low chance that both are cheating
-    if not float(varp1[3]) > float(variables[3]) + 10 or not float(varp1[3]) < float(variables[3]) - 10:
-        variables[3] = str(varp1[3])
+        variables[1] = str(varp1[1]) if yTo0p1 < yTo0p2 else str(varp2[1])
+
+    ##########################
+    # Check player positions #
+    ##########################
+    #########    
+    # Pos x #
+    #########
+    if float(varp1[3]) == float(varp2[3]):
+        variables[3] = str(varp1[3]) if not (float(varp1[3]) > float(variables[3]) + 10 or float(varp1[3]) < float(variables[3]) - 10) else variables[3]
     else:
-        variables[3] = str(varp2[3])
-    if not float(varp2[4]) > float(variables[4]) + 10 or not float(varp2[4]) < float(variables[4]) - 10:
-        variables[4] = str(varp2[4])
+        variables[3] = str(varp1[3]) if not (float(varp1[3]) > float(variables[3]) + 10 or float(varp1[3]) < float(variables[3]) - 10) else str(varp2[3])
+
+    #########    
+    # Pos y #
+    #########
+    if float(varp1[4]) == float(varp2[4]):
+        variables[4] = str(varp1[4]) if not (float(varp1[4]) > float(variables[4]) + 10 or float(varp1[4]) < float(variables[4]) - 10) else variables[4]
     else:
-        variables[4] = str(varp1[4])
-    # Check scores
-    if float(varp1[5]) > float(varp2[5]):
-        if not float(varp1[5]) > float(variables[5]) + 1 and not float(varp1[5]) < float(variables[5]):
-            variables[5] = str(varp1[5])
-        else:
-            variables[5] = str(varp2[5])
+        variables[3] = str(varp1[4]) if not (float(varp1[4]) > float(variables[4]) + 10 or float(varp1[4]) < float(variables[4]) - 10) else str(varp2[4])
+
+
+    ################
+    # Check scores #
+    ################
+    ###################
+    # Points Player 1 #
+    ###################
+    if float(varp1[5]) == float(varp2[5]):
+        variables[5] = str(varp1[5]) if not (float(varp1[5]) > float(variables[5]) + 1) else variables[5]
     else:
-        if not float(varp2[5]) > float(variables[5]) + 1 and not float(varp2[5]) < float(variables[5]):
-            variables[5] = str(varp2[5])
-        else:
-            variables[5] = str(varp1[5])
-    if float(varp1[6]) > float(varp2[6]):
-        if not float(varp1[6]) > float(variables[6]) + 1 and not float(varp1[6]) < float(variables[6]):
-            variables[6] = str(varp1[6])
-        else:
-            variables[6] = str(varp2[6])
+        variables[5] = str(varp1[5]) if not (float(varp1[5]) > float(variables[5]) + 1) else str(varp2[5])
+
+    ###################    
+    # Points Player 2 #
+    ###################
+    if float(varp1[6]) == float(varp2[6]):
+        variables[6] = str(varp1[6]) if not (float(varp1[6]) > float(variables[6]) + 1) else variables[6]
     else:
-        if not float(varp2[6]) > float(variables[6]) + 1 and not float(varp2[6]) < float(variables[6]):
-            variables[6] = str(varp2[6])
-        else:
-            variables[6] = str(varp1[6])
-    # Check game speed
-    print(varp1[7])
+        variables[5] = str(varp1[6]) if not (float(varp1[6]) > float(variables[6]) + 1) else str(varp2[6])
+
+    ####################    
+    # Check game speed #
+    ####################
     variables[7] = str(varp1[7])
 
-    print(sessions[users_session[websocket]]['variables'])
 
 def clear_console():
     os.system('cls' if os.name == 'nt' else 'clear')

@@ -568,11 +568,11 @@ class Scratch3PongMPConnect {
     }
 
     p1 () {
-        return Number(this.player1);
+        return this.player1;
     }
 
     p2 () {
-        return Number(this.player2);
+        return this.player2;
     }
 
     calc_posx () {

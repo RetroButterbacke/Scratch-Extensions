@@ -22,7 +22,6 @@ echo "Building the Scratch fork"
 ./build.sh
 
 echo "Preparing a gh-pages branch"
-DEVBRANCH=$(git rev-parse --abbrev-ref HEAD)
 if git rev-parse --verify gh-pages >/dev/null 2>&1
 then
   git checkout gh-pages
@@ -43,8 +42,12 @@ fi
 echo "Publishing the Scratch fork"
 cp -rf $SCRATCH_SRC_HOME/scratch-gui/build/* ./scratch/.
 git add scratch
+git add download_content
+git add styles
+git add index.html
+git add about.html
 git commit -m "Update"
 git push origin gh-pages
 
 echo "Returning to dev branch"
-git checkout $DEVBRANCH
+git checkout main

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles/reset.css">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="shortcut icon" href="styles/favicon.ico">
+    <title>Scratch Extensions by RetroButterbacke</title>
+</head>
+<body>
+    <header>
+        <a class="title" href="index.html">Scratch Extensions made by RetroButterbacke</a>
+        <div class="menuToggle"></div>
+        <nav>
+            <ul>
+                <li><a href="./scratch/index.html">Scratch Editor</a></li>
+                <li><a href="#">Downloads <b>▼</b></a>
+                    <ul>
+                        <li><a href="./download_content/Pong Multiplayer.sb3" download="Pong.sb3">Pong</a></li>
+                        <li><a href="./download_content/pong_mp_connect_server.zip" download="pong_mp_connect_server.zip">Pong Server</a></li>
+                    </ul>
+                </li>
+                <li><a href="#">About</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section>
+            <h2>What is scratch</h2>
+            <p>Scratch is a beginner-friendly programming language and online platform designed to introduce coding concepts to people of all ages, especially children. Created by the Lifelong Kindergarten Group at the MIT Media Lab, Scratch uses a visual, block-based interface that allows users to create interactive stories, games, and animations without needing to write traditional lines of code.
+
+                In Scratch, users manipulate code blocks, each representing a specific command or function, and snap them together like puzzle pieces. This visual approach makes it easy for beginners to understand the logic of programming without the complexities of syntax. Users can control characters, create events, and build sequences by stacking these blocks, fostering a hands-on and creative learning experience.
+                
+                With its simple drag-and-drop interface, Scratch encourages creativity and problem-solving. Users can share their projects on the Scratch community website, enabling collaboration and inspiration. Overall, Scratch serves as an engaging entry point for individuals to explore the world of programming in a fun and accessible manner.</p>
+            
+        </section>
+    </main>
+    <script>
+        let menuToggle = document.querySelector('.menuToggle');
+        let header = document.querySelector('header');
+        menuToggle.onclick = function() {
+            header.classList.toggle('active')
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles/reset.css">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="shortcut icon" href="styles/favicon.ico">
+    <title>Scratch Extensions by RetroButterbacke</title>
+</head>
+<body>
+    <header>
+        <a class="title" href="index.html">Scratch Extensions made by RetroButterbacke</a>
+        <div class="menuToggle"></div>
+        <nav>
+            <ul>
+                <li><a href="./scratch/index.html">Scratch Editor</a></li>
+                <li><a href="#">Downloads <b>▼</b></a>
+                    <ul>
+                        <li><a href="./download_content/Pong Multiplayer.sb3" download="Pong.sb3">Pong</a></li>
+                        <li><a href="./download_content/pong_mp_connect_server.zip" download="pong_mp_connect_server.zip">Pong Server</a></li>
+                    </ul>
+                </li>
+                <li><a href="./about.html">About</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section>
+            <h2>Projects</h2>
+            <table>
+                <tr>
+                    <th>Project</th>
+                    <th>Status</th>
+                    <th>Download</th>
+                </tr>
+                <tr>
+                    <td>Scratch Pong project</td>
+                    <td>Wip/(uncontinued)</td>
+                    <td><a href="./download_content/Pong Multiplayer.sb3" download="Pong.sb3">Pong.sb3</a></td>
+                </tr>
+                <tr>
+                    <td>Scratch Pong project server</td>
+                    <td>Wip/(uncontinued)</td>
+                    <td><a href="./download_content/pong_mp_connect_server.zip" download="pong_mp_connect_server.zip">pong_mp_connect_server.zip</a></td>
+                </tr>
+            </table>
+        </section>
+    </main>
+    <script>
+        let menuToggle = document.querySelector('.menuToggle');
+        let header = document.querySelector('header');
+        menuToggle.onclick = function() {
+            header.classList.toggle('active')
+        }
+    </script>
+</body>
+</html>
