@@ -29,8 +29,6 @@ else
   git checkout -b gh-pages
 fi
 
-git stash pop
-
 echo "Preparing a publish folder"
 if [ -d "scratch" ]
 then
