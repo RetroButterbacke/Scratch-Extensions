@@ -110,7 +110,7 @@ main p {
     }
 
     header .title {
-        font-size: calc((1.4em / 900px) + 60px);
+        font-size: 0.8em;
     }
 
     header nav {
