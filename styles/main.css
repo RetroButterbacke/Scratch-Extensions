@@ -109,6 +109,10 @@ main p {
         padding: 10px 20px;
     }
 
+    header .title{
+        font-size: calc(1.4em / 900px)
+    }
+
     header nav {
         position: absolute;
         width: 100%;
